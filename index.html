@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Co-Pilot Learning Speed Test (Total Sales HQ – 7 Pillars)</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #f6f7fb; color: #111; }
+    header { background: white; border-bottom: 1px solid #e6e6ef; padding: 16px 20px; position: sticky; top: 0; z-index: 10; }
+    h1 { margin: 0; font-size: 18px; }
+    .sub { margin-top: 6px; color: #555; font-size: 13px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;}
+    .pill { background:#111; color:#fff; padding:4px 8px; border-radius:999px; font-size:12px; }
+    .wrap { padding: 18px 20px 28px; max-width: 1200px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: 360px 1fr; gap: 14px; align-items: start; }
+    .card { background: white; border: 1px solid #e6e6ef; border-radius: 12px; padding: 12px; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
+    .card h2 { font-size: 14px; margin: 0 0 10px; }
+    .small { font-size: 12px; color: #666; margin: 6px 0 0; }
+    button { border: 1px solid #d9d9e6; background: white; padding: 8px 10px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    button:hover { background:#fafaff; }
+    button.primary { background:#111; color:#fff; border-color:#111; }
+    button.primary:hover { opacity: 0.92; }
+    textarea, input[type="text"] {
+      width: 100%; box-sizing: border-box; border: 1px solid #d9d9e6; border-radius: 10px;
+      padding: 10px; font-size: 13px; outline: none;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .tasks { display:flex; flex-direction:column; gap:8px; }
+    .task {
+      border: 1px solid #d9d9e6; background: #fff; border-radius: 10px; padding: 8px 10px;
+      cursor: grab; user-select: none;
+    }
+    .task:active { cursor: grabbing; }
+    .pillars { display:grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: 12px; }
+    .pillar {
+      border: 1px dashed #cfd0de; background: #fbfbff; border-radius: 12px; padding: 10px;
+      min-height: 140px;
+    }
+    .pillar h3 { margin: 0 0 8px; font-size: 13px; }
+    .dropzone { display:flex; flex-direction:column; gap:8px; min-height: 96px; }
+    .over { outline: 2px solid #111; outline-offset: 2px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; }
+    .divider { height: 1px; background: #ececf6; margin: 12px 0; }
+    .two { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .pillars { grid-template-columns: 1fr; }
+      .two { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Co-Pilot Learning Speed & Instruction Test (Total Sales HQ – 7 Pillars)</h1>
+  <div class="sub">
+    <span class="pill">Co-Pilot only</span>
+    <span class="pill">Time limit: <span id="limitLabel">35:00</span></span>
+    <span class="pill">Timer: <span id="timer" class="mono">35:00</span></span>
+    <button id="startBtn" class="primary">Start</button>
+    <button id="resetBtn">Reset</button>
+    <button id="exportBtn">Export Results</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <div class="card">
+      <h2>Candidate Info</h2>
+      <div class="row">
+        <div style="flex:1;">
+          <label class="small">Full Name</label>
+          <input id="candidateName" type="text" placeholder="Type your name" />
+        </div>
+      </div>
+      <div class="row">
+        <div style="flex:1;">
+          <label class="small">Email</label>
+          <input id="candidateEmail" type="text" placeholder="Type your email" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <h2>Task Cards</h2>
+      <p class="small">Drag each card into the correct pillar. You can move cards anytime.</p>
+      <div id="taskPool" class="tasks" aria-label="Task pool"></div>
+
+      <p class="small"><b>Instruction check:</b> Do not leave any cards in the pool. Keep answers concise.</p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="card">
+        <h2>Section 1: Process Summary</h2>
+        <p class="small">Write <b>6 bullet points</b> summarizing the end-to-end workflow.</p>
+        <textarea id="summary" placeholder="• Bullet 1&#10;• Bullet 2&#10;• ..."></textarea>
+      </div>
+
+      <div class="card">
+        <h2>Section 2: Pillar Mapping (Drag & Drop)</h2>
+        <p class="small">Place all cards under the correct pillar.</p>
+        <div id="pillars" class="pillars"></div>
+      </div>
+
+      <div class="card">
+        <h2>Section 3: Spot the Mistakes</h2>
+        <p class="small">Identify at least <b>6 issues</b>. For each: what’s wrong, what should happen, and which pillar it impacts.</p>
+
+        <div class="two">
+          <div>
+            <label class="small"><b>Sample Workflow Log</b> (read-only)</label>
+            <textarea id="log" readonly></textarea>
+          </div>
+          <div>
+            <label class="small"><b>Your Findings</b></label>
+            <textarea id="mistakes" placeholder="1) Issue: ...&#10;Fix: ...&#10;Pillar: ...&#10;&#10;2) Issue: ..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Section 4: Scenario Judgment</h2>
+        <p class="small">Answer clearly. If unsure, state your assumption and what you would escalate.</p>
+        <label class="small"><b>Scenario Answers</b></label>
+        <textarea id="scenarios" placeholder="Scenario 1: ...&#10;Scenario 2: ...&#10;Scenario 3: ..."></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TIME_LIMIT_MINUTES = 35;
+
+const PILLARS = [
+  { id: "p1", name: "Pillar 1 – Lead Generation" },
+  { id: "p2", name: "Pillar 2 – First Response" },
+  { id: "p3", name: "Pillar 3 – Lead Enrichment" },
+  { id: "p4", name: "Pillar 4 – Lead Nurture" },
+  { id: "p5", name: "Pillar 5 – Lead Management" },
+  { id: "p6", name: "Pillar 6 – Performance Management" },
+  { id: "p7", name: "Pillar 7 – Client Communication" },
+];
+
+// Task cards aligned to your tools: ClickUp, Prosp.ai, LinkedIn, GHL
+const TASKS = [
+  // P1 Lead Generation
+  { id:"t1",  text:"Open assigned Client Sales Engine in ClickUp", correct:"p1" },
+  { id:"t2",  text:"Confirm Prosp.ai campaign status is Active", correct:"p1" },
+  { id:"t3",  text:"Verify connection requests and follow-ups are sending", correct:"p1" },
+  { id:"t4",  text:"Check prospect buffer covers at least 5 days", correct:"p1" },
+  { id:"t5",  text:"Add prospects only from client-approved ICP sources (if needed)", correct:"p1" },
+  { id:"t6",  text:"Check LinkedIn account health for restrictions/errors", correct:"p1" },
+  { id:"t7",  text:"Escalate immediately if campaign cannot run as expected", correct:"p1" },
+
+  // P2 First Response
+  { id:"t8",  text:"Review new prospect responses in Prosp.ai", correct:"p2" },
+  { id:"t9",  text:"Read the full LinkedIn conversation context", correct:"p2" },
+  { id:"t10", text:"Profile the lead against client-defined criteria", correct:"p2" },
+  { id:"t11", text:"Assign category: Hot Lead / Lead Nurture / Not a Lead", correct:"p2" },
+  { id:"t12", text:"Record category in response log/form", correct:"p2" },
+  { id:"t13", text:"Add lead to GHL if approved (Hot Lead or Lead Nurture)", correct:"p2" },
+  { id:"t14", text:"Send second outreach only if client-permitted", correct:"p2" },
+
+  // P3 Lead Enrichment
+  { id:"t15", text:"Open lead record in GHL", correct:"p3" },
+  { id:"t16", text:"Check if Lead Profile already exists", correct:"p3" },
+  { id:"t17", text:"Generate a short Lead Profile summary", correct:"p3" },
+  { id:"t18", text:"Add summary to GHL Notes titled “Lead Profile – Pillar 3”", correct:"p3" },
+  { id:"t19", text:"Fill obvious missing details if clearly available", correct:"p3" },
+  { id:"t20", text:"Mark enrichment as complete", correct:"p3" },
+
+  // P4 Lead Nurture
+  { id:"t21", text:"Review automation-generated nurture tasks in ClickUp", correct:"p4" },
+  { id:"t22", text:"Follow ClickUp task instructions exactly as written", correct:"p4" },
+  { id:"t23", text:"Execute the follow-up (LinkedIn/Email) as directed", correct:"p4" },
+  { id:"t24", text:"Mark nurture task as completed", correct:"p4" },
+  { id:"t25", text:"Escalate only if automation issues occur", correct:"p4" },
+
+  // P5 Lead Management
+  { id:"t26", text:"Review active leads in GHL pipeline/status", correct:"p5" },
+  { id:"t27", text:"Decide: progress / remain in nurture / pause / close", correct:"p5" },
+  { id:"t28", text:"Apply the decision in GHL", correct:"p5" },
+  { id:"t29", text:"Execute or trigger the required action (LinkedIn/Email/Calendar)", correct:"p5" },
+  { id:"t30", text:"Update ClickUp only to reflect work completed", correct:"p5" },
+
+  // P6 Performance Management
+  { id:"t31", text:"Update ClickUp task statuses accurately (Completed/Blocked/Escalated)", correct:"p6" },
+  { id:"t32", text:"Cross-check execution against GHL activity", correct:"p6" },
+  { id:"t33", text:"Confirm daily counts for required categories (Messages, Responses, Leads Added, Hot Leads, Nurture, Meetings)", correct:"p6" },
+  { id:"t34", text:"Document blockers/escalations factually", correct:"p6" },
+
+  // P7 Client Communication
+  { id:"t35", text:"Review Pillar 6 numbers and execution status before updating client", correct:"p7" },
+  { id:"t36", text:"Prepare client update using only verified system data", correct:"p7" },
+  { id:"t37", text:"Share the 6 required data points in the update", correct:"p7" },
+  { id:"t38", text:"Escalate items requiring client decisions/approvals", correct:"p7" },
+  { id:"t39", text:"Log communication if it affects execution", correct:"p7" },
+];
+
+const WORKFLOW_LOG = [
+  "1) Prosp.ai campaign is 'Paused' but Pillar 1 marked Complete in ClickUp.",
+  "2) Prospect buffer is only 2 days. No escalation was logged.",
+  "3) New response in Prosp.ai was categorized without reading the LinkedIn conversation.",
+  "4) Lead was labeled Hot Lead but not added to GHL.",
+  "5) Lead was added to GHL but no 'Lead Profile – Pillar 3' note was created.",
+  "6) A nurture follow-up was executed but the ClickUp nurture task was left In Progress.",
+  "7) Lead was moved to a later stage without confirming next action and ownership in GHL.",
+  "8) Pillar 6 daily numbers were reported without cross-checking GHL activity.",
+  "9) Client update was sent with numbers that do not match Pillar 6 verified counts.",
+  "10) ICP source approval was needed but it was not escalated for client decision.",
+].join("\n");
+
+const $ = (id) => document.getElementById(id);
+
+let timeLeft = TIME_LIMIT_MINUTES * 60;
+let timerHandle = null;
+let startedAt = null;
+
+function formatTime(sec) {
+  const m = String(Math.floor(sec / 60)).padStart(2, "0");
+  const s = String(sec % 60).padStart(2, "0");
+  return `${m}:${s}`;
+}
+function setTimerUI() {
+  $("timer").textContent = formatTime(timeLeft);
+  $("limitLabel").textContent = formatTime(TIME_LIMIT_MINUTES * 60);
+}
+function startTimer() {
+  if (timerHandle) return;
+  if (!startedAt) startedAt = new Date().toISOString();
+  timerHandle = setInterval(() => {
+    timeLeft--;
+    setTimerUI();
+    if (timeLeft <= 0) {
+      clearInterval(timerHandle);
+      timerHandle = null;
+      alert("Time is up. Please export your results now.");
+    }
+  }, 1000);
+}
+function makeTaskEl(task) {
+  const el = document.createElement("div");
+  el.className = "task";
+  el.textContent = task.text;
+  el.draggable = true;
+  el.dataset.taskId = task.id;
+  el.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/plain", task.id);
+    e.dataTransfer.effectAllowed = "move";
+  });
+  return el;
+}
+function makeDropZone(zoneEl) {
+  zoneEl.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    zoneEl.classList.add("over");
+    e.dataTransfer.dropEffect = "move";
+  });
+  zoneEl.addEventListener("dragleave", () => zoneEl.classList.remove("over"));
+  zoneEl.addEventListener("drop", (e) => {
+    e.preventDefault();
+    zoneEl.classList.remove("over");
+    const taskId = e.dataTransfer.getData("text/plain");
+    const taskEl = document.querySelector(`[data-task-id="${taskId}"]`);
+    if (taskEl) zoneEl.appendChild(taskEl);
+  });
+}
+function buildUI() {
+  $("log").value = WORKFLOW_LOG;
+
+  const pool = $("taskPool");
+  pool.innerHTML = "";
+  TASKS.forEach(t => pool.appendChild(makeTaskEl(t)));
+  makeDropZone(pool);
+
+  const pillarsWrap = $("pillars");
+  pillarsWrap.innerHTML = "";
+  PILLARS.forEach(p => {
+    const box = document.createElement("div");
+    box.className = "pillar";
+    box.innerHTML = `<h3>${p.name}</h3><div class="dropzone" data-zone="${p.id}" aria-label="${p.name} dropzone"></div>`;
+    pillarsWrap.appendChild(box);
+  });
+  document.querySelectorAll(".dropzone").forEach(makeDropZone);
+
+  setTimerUI();
+}
+function resetAll() {
+  if (timerHandle) clearInterval(timerHandle);
+  timerHandle = null;
+  startedAt = null;
+  timeLeft = TIME_LIMIT_MINUTES * 60;
+  setTimerUI();
+  $("candidateName").value = "";
+  $("candidateEmail").value = "";
+  $("summary").value = "";
+  $("mistakes").value = "";
+  $("scenarios").value = "";
+  buildUI();
+}
+function collectPlacements() {
+  const placements = {};
+  PILLARS.forEach(p => placements[p.id] = []);
+  placements["pool"] = [];
+
+  document.querySelectorAll("#taskPool .task").forEach(el => placements.pool.push(el.dataset.taskId));
+  PILLARS.forEach(p => {
+    const zone = document.querySelector(`[data-zone="${p.id}"]`);
+    if (!zone) return;
+    zone.querySelectorAll(".task").forEach(el => placements[p.id].push(el.dataset.taskId));
+  });
+  return placements;
+}
+function autoScoreMapping(placements) {
+  let correct = 0, totalPlaced = 0;
+  const taskById = Object.fromEntries(TASKS.map(t => [t.id, t]));
+  PILLARS.forEach(p => {
+    (placements[p.id] || []).forEach(taskId => {
+      totalPlaced++;
+      if (taskById[taskId] && taskById[taskId].correct === p.id) correct++;
+    });
+  });
+  const leftInPool = (placements.pool || []).length;
+  return { correct, totalPlaced, leftInPool };
+}
+function exportResults() {
+  const placements = collectPlacements();
+  const mapping = autoScoreMapping(placements);
+
+  const payload = {
+    version: "copilot-test-7pillars-v1",
+    role_scope: "Co-Pilot (Execution Level)",
+    started_at: startedAt,
+    exported_at: new Date().toISOString(),
+    time_limit_minutes: TIME_LIMIT_MINUTES,
+    time_remaining_seconds: timeLeft,
+    candidate: {
+      name: $("candidateName").value.trim(),
+      email: $("candidateEmail").value.trim(),
+    },
+    responses: {
+      summary: $("summary").value,
+      mistakes: $("mistakes").value,
+      scenarios: $("scenarios").value,
+    },
+    placements,
+    mapping_autoscore: mapping,
+    reviewer_notes: [
+      "Mapping autoscore checks pillar placement accuracy only.",
+      "If cards are left in pool, mark as incomplete per SOP.",
+      "Reviewer scores Summary/Mistakes/Scenarios using rubric."
+    ],
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeName = (payload.candidate.name || "candidate").replace(/[^a-z0-9]+/gi, "_").toLowerCase();
+  a.download = `copilot_test_${safeName}_${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("startBtn").addEventListener("click", startTimer);
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (confirm("Reset everything? This will clear all answers and placements.")) resetAll();
+});
+document.getElementById("exportBtn").addEventListener("click", exportResults);
+
+buildUI();
+</script>
+</body>
+</html>
